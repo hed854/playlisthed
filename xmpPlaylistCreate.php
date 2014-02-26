@@ -5,10 +5,9 @@ require_once('config.php');
 $type = $_POST['type'];
 $length = $_POST['length'];
 if(!is_numeric($length))  throw new Exception("Length must be an int");
-
 // generate playlist
 $sourceDirList = $config[$type];
-$playlist = new xmpPlaylist('out\\', $sourceDirList, $type, true);
+$playlist = new xmpPlaylist($outputDir, $sourceDirList, $type, true);
 $playlist->fill($length);
 
 // download playlist

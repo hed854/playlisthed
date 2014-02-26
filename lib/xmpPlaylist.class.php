@@ -2,7 +2,7 @@
 
 require_once('PlaylistInterface.class.php');
 
-class xmpPlaylist extends PlaylistInterface
+class xmpPlaylist
 {
 	private $nbEntries;
 	private $files = array();
@@ -42,7 +42,8 @@ class xmpPlaylist extends PlaylistInterface
 		while( $count < $fileLimit)
 		{
 			// choose source
-			$pickedSource = $this->sourceDir[mt_rand(0, sizeof($this->sourceDir) - 1)];
+			// TODO: utf8_decode because meh
+			$pickedSource = utf8_decode($this->sourceDir[mt_rand(0, sizeof($this->sourceDir) - 1)]);
 			
 			// choose directory in source
 			if(is_dir($pickedSource))
@@ -97,8 +98,8 @@ class xmpFile
 	public function __construct($dir)
 	{
 		$this->setLength();
-		$this->setFile($this->randomFile($dir, 'mp3'));
-		$this->setTitle(basename($this->getFile(), '.mp3'));
+		$this->setFile($this->randomFile($dir, 'mp3|ogg|mod|s3m|xm|it'));
+		$this->setTitle(basename($this->getFile()));
 	}
 	
 	public function getFile()
@@ -131,8 +132,8 @@ class xmpFile
 		$this->file = $file;
 	}
 	
-	public function randomFile($folder='', $extensions='.*'){
- 
+	public function randomFile($folder='', $extensions='.*')
+	{
     // fix path:
     $folder = trim($folder);
     $folder = ($folder == '') ? '.\\' : $folder;
@@ -142,27 +143,17 @@ class xmpFile
  
     // create files array
     $files = array();
- 
+
     // open directory
-    if ($dir = @opendir($folder)){
+		$di = new RecursiveDirectoryIterator($folder);
+		foreach (new RecursiveIteratorIterator($di) as $filename => $file) {
+			if (!preg_match('/^\.+$/', $file) and preg_match('/\.('.$extensions.')$/i', $file))
+			{
+					$files[] = $filename;
+			}
  
-        // go trough all files:
-        while($file = readdir($dir)){
- 
-            if (!preg_match('/^\.+$/', $file) and 
-                preg_match('/\.('.$extensions.')$/', $file)){
- 
-                // feed the array:
-                $files[] = $file;                
-            }            
-        }        
-        // close directory
-        closedir($dir);    
-    }
-    else {
-        die('Could not open the folder "'.$folder.'"');
-    }
- 
+		}
+   
     if (count($files) == 0){
         die('No files where found :-(');
     }
@@ -179,9 +170,9 @@ class xmpFile
     }
  
     // return the random file:
-    return $folder . $files[$rand];
+    return $files[$rand];
  
-}
+	}
 
 
 }
